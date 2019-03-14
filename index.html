@@ -1,0 +1,169 @@
+<doctype html>
+	<html manifest="colorclock.appcache">
+		<head>
+			<title>Color Clock</title>
+      
+			<style>
+			html, body {
+				height:100%;
+				margin:0;
+				padding:0;
+			}
+
+			body{
+				background-color:#552A7F;
+			}
+
+			#clock{
+				position:absolute;
+				top:50%;
+				left:50%;
+				transform:      	translate(-50%, -50%);
+				-ms-transform: 		translate(-50%, -50%);
+				-webkit-transform: 	translate(-50%, -50%);
+				-moz-transform: 	translate(-50%, -50%);
+				-o-transform: 		translate(-50%, -50%);
+				color:#FFFFFF;
+			    /*border:1px solid black;
+			    display:block;*/
+			    /* display: none;*/
+			}
+
+			.visibleText{
+				font-family:'HelveticaNeue-UltraLight', sans-serif;
+				font-size:15vw;
+				text-align:center;
+				opacity:0.8;
+			}
+
+			#selectors {
+				/*width:100%;*/
+				text-align:center;
+			}
+			#selectors a {
+				display:inline-block;
+				background-color:#CCCCCC;
+				width:49%; /*left the margin*/
+				height:30px;
+				opacity:0.5;
+			}
+			#selectors a.active {
+				opacity:0.8;
+			}
+			#selectors a:hover{
+				opacity:1;
+			}
+			.noSelect {
+				user-select:     		 none;
+				-webkit-user-select:     none;
+				-khtml-user-select:      none;
+				-moz-user-select:    	 none;
+				-ms-user-select:    	 none;
+				-webkit-tap-highlight-color: 0;
+				-webkit-touch-callout:   none;
+			}
+			</style>
+
+			<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>-->
+			<script src="js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+			<script src="js/jquery.color.js" type="text/javascript" charset="utf-8"></script>
+
+			<script>
+				// console.log($("#selectors"));
+
+				$(document).ready(function(){
+					// console.log($("#selectors"));
+					function clockUpdate(){
+						// create data object
+						var date = new Date();
+						// parse hours, minutes, and seconds
+						var hours = date.getHours();
+						var minutes = date.getMinutes();
+						var seconds = date.getSeconds();
+
+						console.log("seconds:", seconds);
+
+						console.log("seconds padded:", padZero(seconds));
+
+						var timeString = padZero(hours) + ":" + padZero(minutes) + ":" + padZero(seconds);
+						console.log(hours + ":" + minutes + ":" + seconds);
+
+						$("#time").html( timeString ); /* put timeSting to html */
+						var color =  "#" + timeToHex(hours, minutes, seconds);
+						$("#hex").html( color ); 
+						$('body').css( {'background-color': color} );
+						$('body').animate( {'background-color': color}, 800, function(){
+							blackOrWhiteTextColorBasedOnBackground();
+						});
+					}
+
+					clockUpdate(); /* calling a function to make it work*/
+					setInterval(clockUpdate,1000);
+					 //convert time to hex string
+                	function timeToHex(hours, minutes, seconds) {
+                    return padZero(parseInt((hours / 24) * 255, 10).toString(16)) +
+                           padZero(parseInt((minutes / 60) * 255, 10).toString(16)) +
+                           padZero(parseInt((seconds / 60) * 255, 10).toString(16));
+                }
+
+					
+					function padZero(val){
+						var value = val.toString(); 
+						console.log(value, (val.length < 2) ? "0" + value : value);
+						return (value.length < 2) ? "0" + value : value; /*  ?= if   true : false */
+
+					}
+
+					$('#selectors a').click(function(){
+						$($(this).attr('href')).show().siblings().hide();/* click any button is this, find the attribute href, show href, hide sibling*/
+						$(this).addClass('active').siblings().removeClass('active');
+					}); 
+				});
+
+
+					//change color of text based on background color
+                	function blackOrWhiteTextColorBasedOnBackground() {
+                    //get color in rgb format, as well as locations of first and last char of the string
+                    //e.g. "rgb(255, 255, 255)", 4, and 17
+                    var color = $('body').css('background-color');
+                    var startIndex = color.indexOf('(') + 1;
+                    var lastIndex = color.indexOf(')');
+                    
+                    //pull string of numbers only from color (using start and end parens as indeces)
+                    //  and create array of values by splitting around comma delimiter
+                    var values = color.slice(startIndex,lastIndex).split(',');
+                    
+                    //using the brightness index, determine color contrast value
+                    var o = Math.round( ( (parseInt(values[0]) * 299) + 
+                                          (parseInt(values[1]) * 587) + 
+                                          (parseInt(values[2]) * 114) ) / 1000);
+                    //if brighter than the middle composite color value (255/2), make text black. else make white
+                    (o > 127) ? $('#hex, #time').css('color', 'black') : $('#hex, #time').css('color', 'white');
+                    //(o > 127) ? $('#time').css('color', 'black') : $('#time').css('color', 'white');
+                }
+
+			</script>
+
+		</head>
+		<body>
+
+			<!-- start color clock -->
+			<div id="clock">
+				<div id="textDisplay">
+					<div id="time" class="visibleText noSelect">
+						00:00:00
+					</div>
+					<div id="hex" class="visibleText noSelect" style="display:none;">
+						#GGGGGG
+					</div>
+				</div><!-- end #textdisplay -->
+				<div id="selectors">
+					<a href="#time" class="active">textbutten</a> <a href="#hex">colorbutten</a>
+				</div>
+			</div><!-- end #clock -->
+
+
+
+
+		</body>
+	</html>
